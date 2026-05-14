@@ -1,0 +1,116 @@
+import { Routes, Route } from "react-router-dom";
+
+import { ThemeProvider } from "./context/themeContext";
+
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import HomePage from "./pages/HomePage";
+
+import PatternsPage from "./pages/PatternsPage";
+import PatternDetailPage from "./pages/PatternDetailPage";
+import ProblemsPage from "./pages/ProblemsPage";
+import ProblemDetailPage from "./pages/ProblemDetailPage";
+import ProblemLeaderboardPage from "./pages/ProblemLeaderboardPage";
+import SubmissionHistoryPage from "./pages/SubmissionHistoryPage";
+import DashboardPage from "./pages/DashboardPage";
+
+import CreateProblemPage from "./pages/CreateProblemPage";
+import EditProblemPage from "./pages/EditProblemPage";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AppLayout from "./layouts/AppLayout";
+import GlobalLeaderboardPage from "./pages/GlobalLeaderboardPage";
+import SubmissionDetailPage from "./pages/SubmissionDetailPage";
+import ProfilePage from "./pages/ProfilePage";
+import OAuthCallbackPage from "./pages/OAuthCallbackPage";
+import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+function App() {
+  return (
+    <ThemeProvider>
+
+      <Routes>
+
+        {/* PUBLIC ROUTES */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* AUTHENTICATED ROUTES */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+
+            {/* Core Structure */}
+
+            <Route path="/dashboard" element={<DashboardPage />} />
+
+            <Route path="/patterns" element={<PatternsPage />} />
+            <Route
+              path="/patterns/:patternName"
+              element={<PatternDetailPage />}
+            />
+
+            <Route path="/problems" element={<ProblemsPage />} />
+            <Route
+              path="/problems/:problemId"
+              element={<ProblemDetailPage />}
+            />
+
+            <Route
+              path="/submissions"
+              element={<SubmissionHistoryPage />}
+            />
+
+            <Route path="/submissions/:id" element={<SubmissionDetailPage />} />
+
+            <Route
+              path="/leaderboard"
+              element={<GlobalLeaderboardPage />}
+            />
+
+            <Route
+              path="/leaderboard/:problemId"
+              element={<ProblemLeaderboardPage />}
+            />
+
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+
+            {/* ADMIN ONLY */}
+
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route
+                path="/admin/create"
+                element={<CreateProblemPage />}
+              />
+
+              <Route
+                path="/admin/edit/:id"
+                element={<EditProblemPage />}
+              />
+              <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+            </Route>
+
+          </Route>
+        </Route>
+
+        <Route path="*" element={
+          <div className="min-h-screen flex items-center justify-center
+                          bg-background text-foreground">
+            <div className="text-center space-y-2">
+              <p className="text-6xl font-bold text-primary">404</p>
+              <p className="text-muted-foreground">Page not found.</p>
+            </div>
+          </div>
+        } />
+
+      </Routes>
+
+    </ThemeProvider>
+  );
+}
+
+export default App;
