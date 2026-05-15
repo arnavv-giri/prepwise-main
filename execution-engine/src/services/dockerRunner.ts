@@ -20,10 +20,12 @@ const MAX_OUTPUT = 1024 * 1024; // 1MB
 const TIME_LIMIT = 5000; // 5 seconds
 
 /* =============================== */
-/* Check if Docker is available    */
+/* Check available runtimes        */
 /* =============================== */
 
 let dockerAvailable = false;
+let gppAvailable = false;
+let python3Available = false;
 
 try {
   execSync("docker info", { stdio: "ignore", timeout: 3000 });
@@ -32,6 +34,22 @@ try {
 } catch {
   dockerAvailable = false;
   console.log("⚠️  Docker not available — using direct execution (Render mode)");
+}
+
+try {
+  execSync("g++ --version", { stdio: "ignore", timeout: 3000 });
+  gppAvailable = true;
+  console.log("✅ g++ available");
+} catch {
+  console.log("⚠️  g++ not found — C++ submissions will fail");
+}
+
+try {
+  execSync("python3 --version", { stdio: "ignore", timeout: 3000 });
+  python3Available = true;
+  console.log("✅ python3 available");
+} catch {
+  console.log("⚠️  python3 not found — Python submissions will fail");
 }
 
 /* =============================== */
@@ -45,6 +63,27 @@ const runDirect = (
   jobDir: string
 ): Promise<ExecutionResult> => {
   return new Promise((resolve) => {
+    // Guard: check if required runtime exists
+    if (language === "cpp" && !gppAvailable) {
+      resolve({
+        status: "internal_error",
+        stdout: "",
+        stderr: "g++ compiler not available on this server. Please contact the admin.",
+        executionTime: 0,
+      });
+      return;
+    }
+
+    if (language === "python" && !python3Available) {
+      resolve({
+        status: "internal_error",
+        stdout: "",
+        stderr: "python3 not available on this server. Please contact the admin.",
+        executionTime: 0,
+      });
+      return;
+    }
+
     let filename = "";
     let command: string[] = [];
 
@@ -178,9 +217,7 @@ const runDocker = (
   jobDir: string
 ): Promise<ExecutionResult> => {
   return new Promise((resolveOuter) => {
-    const resolveOnce = (result: ExecutionResult) => {
-      resolveOuter(result);
-    };
+    const resolveOnce = (result: ExecutionResult) => resolveOuter(result);
 
     let filename = "";
     let compileImage = "";
