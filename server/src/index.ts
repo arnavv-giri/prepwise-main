@@ -20,15 +20,7 @@ dotenv.config();
 
 const app = express();
 
-/* ============================= */
-/* Trust Proxy (Render support) */
-/* ============================= */
-
 app.set("trust proxy", 1);
-
-/* ============================= */
-/* CORS Configuration           */
-/* ============================= */
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -38,47 +30,18 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // allow server-to-server or curl requests
       if (!origin) return callback(null, true);
-
-      // allow localhost
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // allow ANY vercel preview deployment
-      if (origin.endsWith(".vercel.app")) {
-        return callback(null, true);
-      }
-
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
 );
 
-/* ============================= */
-/* Security Middleware          */
-/* ============================= */
-
 app.use(helmet());
-
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-  })
-);
-
-/* ============================= */
-/* Body Parser                  */
-/* ============================= */
-
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(express.json({ limit: "50kb" }));
-
-/* ============================= */
-/* Routes                       */
-/* ============================= */
 
 app.use("/api/auth", authRoutes);
 app.use("/api/problems", problemRoutes);
@@ -88,48 +51,36 @@ app.use("/api/users", userRoutes);
 app.use("/api/run", runRoutes);
 app.use("/api/admin", adminRoutes);
 
-/* ============================= */
-/* Health Check Route           */
-/* ============================= */
-
 app.get("/", (req, res) => {
   res.send("SkillTrack API is running 🚀");
 });
 
 app.get("/health", async (req, res) => {
   const dbState = mongoose.connection.readyState;
-  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
   const dbStatus = dbState === 1 ? "connected" : "disconnected";
-
   const status = dbState === 1 ? "ok" : "degraded";
-
   res.status(dbState === 1 ? 200 : 503).json({
     status,
     timestamp: new Date().toISOString(),
-    services: {
-      database: dbStatus,
-    },
+    services: { database: dbStatus },
   });
 });
 
-/* Example protected route */
+// Debug endpoint — remove after fixing
+app.get("/debug-env", (req, res) => {
+  res.json({
+    INTERNAL_SECRET_SET: !!process.env.INTERNAL_SECRET,
+    INTERNAL_SECRET_LENGTH: process.env.INTERNAL_SECRET?.length || 0,
+    INTERNAL_SECRET_PREVIEW: process.env.INTERNAL_SECRET?.slice(0, 8) || "NOT SET",
+    EXECUTION_ENGINE_URL: process.env.EXECUTION_ENGINE_URL || "NOT SET",
+  });
+});
 
 app.get("/api/test/protected", protect, (req: Request, res: Response) => {
-  res.json({
-    message: "You accessed a protected route",
-    user: req.user,
-  });
+  res.json({ message: "You accessed a protected route", user: req.user });
 });
 
-/* ============================= */
-/* Global Error Handler         */
-/* ============================= */
-
 app.use(globalErrorHandler);
-
-/* ============================= */
-/* Database + Server Start      */
-/* ============================= */
 
 const PORT = process.env.PORT || 5000;
 
@@ -137,6 +88,10 @@ export { app };
 
 const startServer = async () => {
   try {
+    console.log("[ENV] INTERNAL_SECRET set:", !!process.env.INTERNAL_SECRET);
+    console.log("[ENV] INTERNAL_SECRET length:", process.env.INTERNAL_SECRET?.length || 0);
+    console.log("[ENV] EXECUTION_ENGINE_URL:", process.env.EXECUTION_ENGINE_URL || "NOT SET");
+
     await mongoose.connect(process.env.MONGO_URI as string);
     console.log("MongoDB connected");
 
