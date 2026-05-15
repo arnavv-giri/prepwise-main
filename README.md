@@ -1,7 +1,7 @@
 
-# SkillTrack
+# PrepWise
 
-SkillTrack is a pattern-based DSA interview platform built around one core challenge:
+PrepWise is a pattern-based DSA interview platform built around one core challenge:
 
 > How do you safely execute untrusted user code while keeping the system scalable, reliable, and secure?
 
@@ -11,10 +11,10 @@ It combines structured learning with a real execution engine using a multi-servi
 
 ## ⚙️ System Architecture
 
-SkillTrack is built as three independent services:
+PrepWise is built as three independent services:
 
 ```plaintext
-SkillTrack/
+PrepWise/
 │
 ├── client/             # React frontend (UI layer)
 ├── server/             # API, authentication, database
@@ -43,7 +43,7 @@ SkillTrack/
 
 ## 🎯 Core Philosophy
 
-SkillTrack moves beyond random problem-solving by focusing on:
+PrepWise moves beyond random problem-solving by focusing on:
 
 - Structured DSA curriculum (12 patterns)  
 - Ordered progression system  
@@ -120,8 +120,8 @@ SkillTrack moves beyond random problem-solving by focusing on:
 ### Clone
 
 ```bash
-git clone https://github.com/Jashan1001/skilltrack.git
-cd skilltrack
+git clone https://github.com/arnavv-giri/prepwise.git
+cd prepwise
 ```
 ---
 
@@ -188,7 +188,7 @@ npm run seed
 
 ## 📈 Vision
 
-SkillTrack focuses on structured mastery over random practice by combining:
+Prepwise focuses on structured mastery over random practice by combining:
 
 * Guided learning paths
 * Real execution environment
@@ -198,6 +198,6 @@ SkillTrack focuses on structured mastery over random practice by combining:
 
 ## 👤 Author
 
-Jashan
-GitHub: [https://github.com/Jashan1001](https://github.com/Jashan1001)
+Arnav
+GitHub: [https://github.com/arnavv-giri](https://github.com/arnavv-giri)
 
