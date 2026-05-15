@@ -7,6 +7,36 @@ dotenv.config();
 const app = express();
 
 /* ============================= */
+/* Body Parser FIRST             */
+/* ============================= */
+
+app.use(express.json({ limit: "100kb" }));
+
+/* ============================= */
+/* Health Check (no auth)        */
+/* ============================= */
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", service: "execution-engine" });
+});
+
+/* ============================= */
+/* Debug endpoint (no auth)      */
+/* ============================= */
+
+app.post("/debug", (req, res) => {
+  const token = req.headers["x-internal-token"];
+  const secret = process.env.INTERNAL_SECRET;
+  res.json({
+    receivedToken: token || "MISSING",
+    secretSet: !!secret,
+    secretLength: secret?.length || 0,
+    match: token === secret,
+    body: req.body,
+  });
+});
+
+/* ============================= */
 /* Internal Auth Guard          */
 /* ============================= */
 
@@ -23,31 +53,20 @@ app.use((req, res, next) => {
   const token = req.headers["x-internal-token"];
 
   if (token !== INTERNAL_SECRET) {
-    return res.status(401).json({ error: "Unauthorized" });
+    console.error(`[AUTH FAIL] Expected: "${INTERNAL_SECRET?.slice(0, 8)}..." Got: "${String(token).slice(0, 8)}..."`);
+    return res.status(401).json({ error: "Unauthorized", hint: "INTERNAL_SECRET mismatch" });
   }
 
+  console.log(`[AUTH OK] ${req.method} ${req.path}`);
   next();
 });
-
-/* ============================= */
-/* Body Parser                  */
-/* ============================= */
-
-app.use(express.json({ limit: "100kb" }));
 
 /* ============================= */
 /* Routes                       */
 /* ============================= */
 
+app.use("/execute", executeRouter);
 app.use("/", executeRouter);
-
-/* ============================= */
-/* Health Check                 */
-/* ============================= */
-
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", service: "execution-engine" });
-});
 
 /* ============================= */
 /* Start                        */
