@@ -12,10 +12,12 @@ import submissionRoutes from "./routes/submissionRoutes";
 import leaderboardRoutes from "./routes/leaderboardRoutes";
 import userRoutes from "./routes/userRoutes";
 import runRoutes from "./routes/runRoutes";
+import adminRoutes from "./routes/adminRoutes";
 
 import { protect } from "./middleware/authMiddleware";
 import { globalErrorHandler } from "./middleware/errorHandler";
-import adminRoutes from "./routes/adminRoutes";
+import { startKeepAlive } from "./utils/keepAlive";
+
 dotenv.config();
 
 const app = express();
@@ -52,7 +54,7 @@ app.use("/api/run", runRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
-  res.send("SkillTrack API is running 🚀");
+  res.send("PrepWise API is running 🚀");
 });
 
 app.get("/health", async (req, res) => {
@@ -66,7 +68,7 @@ app.get("/health", async (req, res) => {
   });
 });
 
-// Debug endpoint — remove after fixing
+// Debug endpoint — remove after confirming env vars work
 app.get("/debug-env", (req, res) => {
   res.json({
     INTERNAL_SECRET_SET: !!process.env.INTERNAL_SECRET,
@@ -97,6 +99,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      startKeepAlive(); // Start pinging after server is up
     });
   } catch (error) {
     console.error("MongoDB connection failed:", error);
