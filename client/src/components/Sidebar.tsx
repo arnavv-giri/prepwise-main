@@ -76,7 +76,7 @@ const Sidebar: React.FC = () => {
                   transition-all duration-300 ease-in-out shrink-0 animate-slide-in-left
                   ${collapsed ? "w-14" : "w-52"}`}
     >
-      {/* Collapse toggle — sits at the right edge, fully visible */}
+      {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed((c) => !c)}
         className="absolute right-1 top-3 z-20 w-6 h-6 rounded-md
@@ -94,12 +94,15 @@ const Sidebar: React.FC = () => {
                        transition-all duration-300
                        ${collapsed ? "px-3 justify-center" : "px-4"}`}>
         {collapsed ? (
-          <Link to="/" className="text-primary hover:opacity-80 transition-opacity">
-            <Code2 size={17} />
+          <Link to="/" className="hover:opacity-80 transition-opacity">
+            <img src="/prepwise-logo.png" alt="PrepWise" className="w-7 h-7 object-contain rounded-md" />
           </Link>
         ) : (
-          <Link to="/" className="font-bold text-sm text-sidebar-fg tracking-tight hover:opacity-80 transition-opacity">
-            Prep<span className="text-primary">Wise</span>
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img src="/prepwise-logo.png" alt="PrepWise" className="w-7 h-7 object-contain rounded-md" />
+            <span className="font-bold text-sm text-sidebar-fg tracking-tight">
+              Prep<span className="text-primary">Wise</span>
+            </span>
           </Link>
         )}
       </div>
@@ -117,7 +120,6 @@ const Sidebar: React.FC = () => {
               >
                 {({ isActive }) => (
                   <>
-                    {/* Active left bar indicator */}
                     {isActive && (
                       <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-r-full bg-accent-blue" />
                     )}
@@ -130,10 +132,8 @@ const Sidebar: React.FC = () => {
           );
         })}
 
-        {/* Divider */}
         <div className="my-2 border-t border-sidebar-border" />
 
-        {/* Theme toggle */}
         <Tooltip label={theme === "dark" ? "Light mode" : "Dark mode"} show={collapsed}>
           <button onClick={toggleTheme} className={iconBtnClass}>
             <span className="shrink-0 transition-transform duration-300 hover:rotate-12">
@@ -145,12 +145,8 @@ const Sidebar: React.FC = () => {
           </button>
         </Tooltip>
 
-        {/* Logout */}
         <Tooltip label="Sign out" show={collapsed}>
-          <button
-            onClick={logout}
-            className={`${iconBtnClass} hover:text-accent-red`}
-          >
+          <button onClick={logout} className={`${iconBtnClass} hover:text-accent-red`}>
             <LogOut size={15} className="shrink-0" />
             {!collapsed && <span>Sign out</span>}
           </button>

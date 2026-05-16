@@ -9,12 +9,14 @@ const Header = ({ showAuthButtons = true }) => {
     <header className="h-14 border-b border-border bg-card">
       <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
 
-        <Link to="/" className="text-lg font-semibold tracking-tight">
-          PrepWise
+        <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <img src="/prepwise-logo.png" alt="PrepWise" className="w-8 h-8 object-contain rounded-md" />
+          <span className="text-lg font-semibold tracking-tight">
+            Prep<span className="text-primary">Wise</span>
+          </span>
         </Link>
 
         <div className="flex items-center gap-6">
-
           <button
             onClick={toggleTheme}
             className="p-2 rounded-md hover:bg-muted transition"
@@ -30,7 +32,6 @@ const Header = ({ showAuthButtons = true }) => {
               >
                 Sign In
               </Link>
-
               <Link
                 to="/register"
                 className="bg-primary text-primary-foreground text-sm px-4 py-2 rounded-md hover:opacity-90 transition"
@@ -39,7 +40,6 @@ const Header = ({ showAuthButtons = true }) => {
               </Link>
             </>
           )}
-
         </div>
       </div>
     </header>
