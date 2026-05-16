@@ -18,65 +18,66 @@ export const evaluateTestCases = async (
   const normalize = (str: string) =>
     str.replace(/\r/g, "").trim().replace(/\s+/g, " ");
 
-  const results = await Promise.all(
-    testCases.map(async (testCase, i) => {
-      const startTime = Date.now();
+  // Run test cases SERIALLY to avoid CPU starvation on free Render tier
+  const results = [];
+  for (let i = 0; i < testCases.length; i++) {
+    const testCase = testCases[i];
+    const startTime = Date.now();
 
-      try {
-        const url = `${EXECUTOR_URL}/`;
-        console.log(`[EVAL] Test ${i + 1}: POST ${url} lang=${language}`);
+    try {
+      const url = `${EXECUTOR_URL}/`;
+      console.log(`[EVAL] Test ${i + 1}: POST ${url} lang=${language}`);
 
-        const response = await axios.post(
-          url,
-          { code, language, input: testCase.input },
-          {
-            timeout: 30000,
-            headers: {
-              "x-internal-token": process.env.INTERNAL_SECRET as string,
-            },
-          }
-        );
+      const response = await axios.post(
+        url,
+        { code, language, input: testCase.input },
+        {
+          timeout: 60000, // 60s timeout per test case
+          headers: {
+            "x-internal-token": process.env.INTERNAL_SECRET as string,
+          },
+        }
+      );
 
-        const runtime = Date.now() - startTime;
-        const executorResult = response.data?.data || response.data;
+      const runtime = Date.now() - startTime;
+      const executorResult = response.data?.data || response.data;
 
-        console.log(`[EVAL] Test ${i + 1} result:`, JSON.stringify(executorResult));
+      console.log(`[EVAL] Test ${i + 1} result:`, JSON.stringify(executorResult));
 
-        const actualOutput = normalize(executorResult?.stdout?.toString() || "");
-        const expectedOutput = normalize(testCase.expectedOutput?.toString() || "");
+      const actualOutput = normalize(executorResult?.stdout?.toString() || "");
+      const expectedOutput = normalize(testCase.expectedOutput?.toString() || "");
 
-        const status: Verdict = executorResult?.status || "runtime_error";
-        const passed = status === "accepted" && actualOutput === expectedOutput;
+      const status: Verdict = executorResult?.status || "runtime_error";
+      const passed = status === "accepted" && actualOutput === expectedOutput;
 
-        return {
-          testCase: i + 1,
-          passed,
-          runtime,
-          expected: expectedOutput,
-          output: actualOutput || executorResult?.stderr || "",
-          status,
-        };
-      } catch (error: any) {
-        const statusCode = error?.response?.status;
-        const responseData = error?.response?.data;
-        const message = error?.message;
+      results.push({
+        testCase: i + 1,
+        passed,
+        runtime,
+        expected: expectedOutput,
+        output: actualOutput || executorResult?.stderr || "",
+        status,
+      });
+    } catch (error: any) {
+      const statusCode = error?.response?.status;
+      const responseData = error?.response?.data;
+      const message = error?.message;
 
-        console.error(`[EVAL ERROR] Test ${i + 1}:`);
-        console.error(`  HTTP Status: ${statusCode}`);
-        console.error(`  Response:`, JSON.stringify(responseData));
-        console.error(`  Message: ${message}`);
+      console.error(`[EVAL ERROR] Test ${i + 1}:`);
+      console.error(`  HTTP Status: ${statusCode}`);
+      console.error(`  Response:`, JSON.stringify(responseData));
+      console.error(`  Message: ${message}`);
 
-        return {
-          testCase: i + 1,
-          passed: false,
-          runtime: 0,
-          expected: testCase.expectedOutput || "",
-          output: responseData?.stderr || responseData?.error || message || "Execution failed",
-          status: "runtime_error" as Verdict,
-        };
-      }
-    })
-  );
+      results.push({
+        testCase: i + 1,
+        passed: false,
+        runtime: 0,
+        expected: testCase.expectedOutput || "",
+        output: responseData?.stderr || responseData?.error || message || "Execution failed",
+        status: "runtime_error" as Verdict,
+      });
+    }
+  }
 
   let passedCount = 0;
   let totalRuntime = 0;
